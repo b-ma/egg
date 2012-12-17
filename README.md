@@ -4,7 +4,7 @@ Jquery - Eggs Helper
 A simple plugin to help you insert Eggs
 And focus on creativity...
 
-Use : 
+Use :
 -----
 
 ```javascript
