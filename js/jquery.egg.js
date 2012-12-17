@@ -1,7 +1,6 @@
 (function( $, window, document, undefined ) {
     var pluginName = 'egg',
-		currentIndex = 0,
-		defaultCallback = function(){ alert('petit poney !'); }
+		defaultCallback = function(){ alert('petit poney !'); },
 		defaults = {
 			// up, up, down, down, left, right, left, right, B, A
 			keyCodes : [38, 38, 40, 40, 37, 39, 37, 39, 66, 65 ],
@@ -9,55 +8,89 @@
 			trace : false,
 		}
 	;
-	
-	var clear = function() {
-		currentIndex = 0;
-	}
-	
-	var plug = function( options, callback ) {
-	
-		var _config = $.extend( defaults, options ),
-			_callback = callback || defaultCallback,
-			_maxIndex = _config.keyCodes.length,
-			codeCollection = [],
-			code,
-			timeoutId
-		;
+
+
+	var Plugin = function( elm, options, callback ) {
+        this._name = pluginName;
+        this._elm = elm;
+		this._config = $.extend( defaults, options );
 		
-        $( window ).keyup( function( e ) {
-			code = e.keyCode ? e.keyCode : e.which;
-		
-			if ( _config.trace ) {
-				codeCollection.push( code );
-				console.log( codeCollection );
-				return;
-			}
-			
-            if ( code === _config.keyCodes[currentIndex] ) {
-                clearTimeout( timeoutId );
-                currentIndex = currentIndex + 1;
-				
-                if ( currentIndex === _maxIndex ) {
-                    clear();
-                    _callback();
+        this._callback = callback || defaultCallback;
+        this.currentIndex = 0;
+        
+		this.init();
+	};
+
+    Plugin.prototype = {
+        init : function() {
+            var that = this;
+        
+            this._maxIndex = this._config.keyCodes.length;
+            this.codeCollection = [];
+            this.timeoutId;
+
+            $( window ).keyup( function( e ) {
+                var code = e.keyCode ? e.keyCode : e.which;
+
+                if ( that._config.trace ) {
+                    that.trace( code );
+                    return;
                 }
-                
-                timeoutId = setTimeout( function() {
-                    clear();
-                }, _config.delay );
-            } else {
-                clear();
-			}
-        }); 
-	}
+
+                if ( code === that._config.keyCodes[that.currentIndex] ) {
+                    that.test( code );
+                } else {
+                    that.clear();
+                }
+            });
+        },
+        
+        trace : function( keyCode ) {
+            this.codeCollection.push( code );
+            console.log( this.codeCollection );
+        },
+        
+        test : function( code ) {
+            var that = this;
+            
+            clearTimeout( that.timeoutId );
+            this.currentIndex = this.currentIndex + 1;
+
+            if ( that.currentIndex === that._maxIndex ) {
+                this.clear();
+                this._callback.apply( this._elm );
+            }
+
+            this.timeoutId = setTimeout( function() {
+                that.clear();
+            }, this._config.delay );
+        },
     
-	// can be improved
-    $[pluginName] = function( arg1, arg2 ) { 
-		if ( typeof arg1 === 'object' && typeof arg2 === 'function' ) {
-			plug( arg1, arg2 );
-		} else if ( typeof arg1 === 'function' ) {
-			plug( {}, arg1 );
-		}
+        clear : function() {
+            this.currentIndex = 0;
+        }
+    
+    };
+
+    var createInstance = function ( elm, options, callback ) {
+        // one Egg per app
+        if ( !$.data( elm, 'plugin_' + pluginName ) ) {
+            if ( typeof options === 'function' )  {
+               var callback = options;
+               var options = {};
+            }
+            $.data( elm, 'plugin_' + pluginName, new Plugin( elm, options, callback ) );
+        }
+    };
+    
+    $[pluginName] = function( options, callback ) {
+       createInstance( document, options, callback );
     }
-	
+    
+    $.fn[pluginName] = function( options, callback ) {
+        return this.each( function() {
+            createInstance( this, options, callback );
+        });
+    }
+
 }( jQuery, window, document ));
