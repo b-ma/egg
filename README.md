@@ -13,12 +13,12 @@ $elm.egg( function() {
     $( this ).doStuff // $( this ) refers to $elm
 });
 
-... alter use
+// ... alter use
 $.egg( function() {
     doStuff();
 });
 
-... optionnal parameters
+// ... optionnal parameters
 $.egg({
     trace : true, // allow to trace your own keyCode (dev only)
     delay : 2000,   // default 1000 => time allowed between each keyPress
@@ -31,4 +31,4 @@ $.egg({
 TODO
 ----
 
-Ideas welcome...
+Looking for Ideas...
